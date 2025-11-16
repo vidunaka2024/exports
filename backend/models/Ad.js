@@ -37,4 +37,11 @@ const adSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indexes for better query performance
+adSchema.index({ type: 1, status: 1 });
+adSchema.index({ category: 1 });
+adSchema.index({ user: 1 });
+adSchema.index({ createdAt: -1 });
+adSchema.index({ title: "text", description: "text" });
+
 export default mongoose.model("Ad", adSchema);

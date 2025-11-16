@@ -75,7 +75,8 @@ export const getManufacturerOrders = async (req, res) => {
   try {
     const orders = await Order.find({ manufacturer: req.user._id })
       .populate("ad", "title price")
-      .populate("exporter", "companyName email");
+      .populate("exporter", "companyName email")
+      .lean();
     res.json(orders);
   } catch (error) {
     res
@@ -88,7 +89,8 @@ export const getExporterOrders = async (req, res) => {
   try {
     const orders = await Order.find({ exporter: req.user._id })
       .populate("ad", "title price")
-      .populate("manufacturer", "companyName email");
+      .populate("manufacturer", "companyName email")
+      .lean();
     res.json(orders);
   } catch (error) {
     res

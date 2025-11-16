@@ -5,7 +5,7 @@ import User from "../models/User.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find().select("-password").lean();
     res.json(users);
   } catch (error) {
     res
@@ -16,9 +16,24 @@ export const getAllUsers = async (req, res) => {
 
 export const getAllAds = async (req, res) => {
   try {
+    const { page = 1, limit = 20 } = req.query;
     const query = req.query.user ? { user: req.query.user } : {};
-    const ads = await Ad.find(query);
-    res.json(ads);
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [ads, total] = await Promise.all([
+      Ad.find(query).skip(skip).limit(limitNum).lean(),
+      Ad.countDocuments(query)
+    ]);
+
+    res.json({
+      ads,
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      total
+    });
   } catch (error) {
     res
       .status(500)
@@ -28,14 +43,30 @@ export const getAllAds = async (req, res) => {
 
 export const getExporterAds = async (req, res) => {
   try {
-    const { category, location, sort } = req.query;
+    const { category, location, sort, page = 1, limit = 20 } = req.query;
     let query = { type: "exporter", status: "approved" };
     if (category) query.category = category;
     if (location) query.location = location;
-    const ads = await Ad.find(query).sort(
-      sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 }
-    );
-    res.json(ads);
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [ads, total] = await Promise.all([
+      Ad.find(query)
+        .sort(sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Ad.countDocuments(query)
+    ]);
+
+    res.json({
+      ads,
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      total
+    });
   } catch (error) {
     res
       .status(500)
@@ -45,14 +76,30 @@ export const getExporterAds = async (req, res) => {
 
 export const getManufacturerAds = async (req, res) => {
   try {
-    const { category, location, sort } = req.query;
+    const { category, location, sort, page = 1, limit = 20 } = req.query;
     let query = { type: "manufacturer", status: "approved" };
     if (category) query.category = category;
     if (location) query.location = location;
-    const ads = await Ad.find(query).sort(
-      sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 }
-    );
-    res.json(ads);
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [ads, total] = await Promise.all([
+      Ad.find(query)
+        .sort(sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Ad.countDocuments(query)
+    ]);
+
+    res.json({
+      ads,
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      total
+    });
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch manufacturer ads",
@@ -196,7 +243,7 @@ export const searchAds = async (req, res) => {
         { category: { $regex: term, $options: "i" } },
         { companyName: { $regex: term, $options: "i" } },
       ],
-    });
+    }).lean();
     res.json(ads);
   } catch (error) {
     res
@@ -210,7 +257,8 @@ export const getAllOrders = async (req, res) => {
     const orders = await Order.find()
       .populate("exporter", "companyName email")
       .populate("manufacturer", "companyName email")
-      .populate("ad", "title minPrice maxPrice unit");
+      .populate("ad", "title minPrice maxPrice unit")
+      .lean();
     res.json(orders);
   } catch (error) {
     res

@@ -116,4 +116,9 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indexes for better query performance
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ companyName: 1 });
+
 export default mongoose.model("User", userSchema);
