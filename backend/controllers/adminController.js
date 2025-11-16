@@ -18,7 +18,7 @@ export const getAdminDashboardStats = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find().select("-password").lean();
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Error fetching users", error });
@@ -36,7 +36,7 @@ export const deleteUser = async (req, res) => {
 
 export const getAllAds = async (req, res) => {
   try {
-    const ads = await Ad.find({}).populate("user", "companyName name role");
+    const ads = await Ad.find({}).populate("user", "companyName name role").lean();
     res.json(ads);
   } catch (error) {
     res
@@ -88,7 +88,7 @@ export const deleteAdAdmin = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate("ad");
+    const orders = await Order.find().populate("ad").lean();
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Error fetching orders", error });
